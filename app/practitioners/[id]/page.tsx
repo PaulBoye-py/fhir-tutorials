@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Practitioner } from '@/types/fhir';
 import practitionerService from '@/services/practitionerService';
 import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
 
 export default function PractitionerDetailPage() {
   const params = useParams();
@@ -300,17 +301,18 @@ export default function PractitionerDetailPage() {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Link
-              href={`/practitioners/${practitioner.id}/edit`}
-              className="flex-1 sm:flex-none inline-flex justify-center items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              aria-disabled
+              href={`/practitioners/${practitioner.id}/`}
+              className="flex-1 sm:flex-none inline-flex cursor-not-allowed justify-center items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Edit Practitioner
             </Link>
-            <button
+            <Button
               onClick={() => router.push('/practitioners')}
               className="flex-1 sm:flex-none inline-flex justify-center items-center px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
             >
               Back to List
-            </button>
+            </Button>
           </div>
         </div>
       </div>

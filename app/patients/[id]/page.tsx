@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Patient } from '@/types/fhir';
 import patientService from '@/services/patientService';
 import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
 
 export default function PatientDetailPage() {
   const params = useParams();
@@ -282,17 +283,18 @@ export default function PatientDetailPage() {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Link
-              href={`/patients/${patient.id}/edit`}
-              className="flex-1 sm:flex-none inline-flex justify-center items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              aria-disabled
+              href={`/patients/${patient.id}`}
+              className="flex-1 sm:flex-none cursor-not-allowed inline-flex justify-center items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Edit Patient
             </Link>
-            <button
+            <Button
               onClick={() => router.push('/patients')}
               className="flex-1 sm:flex-none inline-flex justify-center items-center px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
             >
               Back to List
-            </button>
+            </Button>
           </div>
         </div>
       </div>
