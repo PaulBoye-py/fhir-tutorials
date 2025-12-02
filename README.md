@@ -1,36 +1,248 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# **FHIR Tutorials – Next.js 14 Patient & Practitioner Portal**
 
-## Getting Started
+*A hands-on project demonstrating how to build a FHIR-enabled patient portal using Next.js, TypeScript, and the HAPI FHIR Server.*
 
-First, run the development server:
+![FHIR + Next.js Banner](./public/banner.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## **Overview**
+
+This project is a practical implementation of a **FHIR (Fast Healthcare Interoperability Resources)** client application built with **Next.js 14**.
+
+It demonstrates how to:
+
+* Search and fetch **Patient** resources
+* Search and fetch **Practitioner** resources
+* Implement pagination with FHIR Bundles
+* Understand and use FHIR REST APIs
+* Build a clean service layer to communicate with a FHIR server
+* Display structured healthcare data in a modern web interface
+
+The backend is powered by the **HAPI FHIR Public Test Server**, using the R4 version of the FHIR specification.
+
+---
+
+## **Tech Stack**
+
+* **Next.js 14** (App Router)
+* **TypeScript**
+* **Axios**
+* **HAPI FHIR Server (R4)**
+* **Tailwind CSS**
+* **FHIR JSON Resources**
+
+---
+
+## 🔗 **Live FHIR Server (used in this project)**
+
+```
+https://hapi.fhir.org/baseR4
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 **Project Structure**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+fhir-tutorials/
+├── app/
+│   ├── patients/
+│   │   └── [id]/
+│   ├── practitioners/
+│   │   └── [id]/
+│   └── layout.tsx
+├── services/
+│   ├── patientService.ts
+│   ├── practitionerService.ts
+├── types/
+│   ├── fhir.ts
+├── public/
+└── README.md
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## **Environment Setup**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Create a `.env.local` file:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+NEXT_PUBLIC_FHIR_BASE_URL=https://hapi.fhir.org/baseR4
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# **FHIR Service Layer**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The service layer abstracts communication with the FHIR server.
+
+---
+
+## **Patient Service (`services/patientService.ts`)**
+
+### Features
+
+* Search patients by name or phone
+* Get total count via `_summary=count`
+* Pagination implemented via `_offset`
+* Fetch and update patient data
+
+### Code (final version incorporating your latest changes)
+
+```ts
+import axios from 'axios';
+
+const baseUrl = `${process.env.NEXT_PUBLIC_FHIR_BASE_URL}/Patient`;
+
+const fhirApi = axios.create({ baseURL: baseUrl, headers: {
+    'Cache-Control' : 'no-cache',
+} });
+
+const isPhoneNumber = (searchTerm: string) => {
+  return /^\d+$/.test(searchTerm);
+};
+
+const getAll = async (page: number, searchTerm?: string) => {
+  let searchParams: any = {};
+
+  if (searchTerm) {
+    if (isPhoneNumber(searchTerm)) searchParams.phone = searchTerm;
+    else searchParams.name = searchTerm;
+  }
+
+  try {
+    const countResponse = await fhirApi.get('', { 
+      params: { _summary: 'count', ...searchParams }
+    });
+
+    const totalCount = countResponse.data?.total || 0;
+
+    const dataResponse = await fhirApi.get('', { 
+      params: {
+        _count: 15,
+        _offset: (page - 1) * 15,
+        ...searchParams
+      }
+    });
+
+    if (dataResponse.headers['content-type']?.includes('application/fhir+json')) {
+      return {
+        ...dataResponse.data,
+        total: totalCount,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error fetching patients:', error);
+    throw error;
+  }
+};
+```
+
+---
+
+## **Practitioner Service (`services/practitionerService.ts`)**
+
+### Features
+
+* FHIR-compliant type definitions using your `Practitioner` model
+* Search by phone or name
+* Pagination
+* Create & update practitioners
+
+```ts
+import axios from 'axios';
+import { Practitioner } from '@/types/fhir';
+
+const baseUrl = `${process.env.NEXT_PUBLIC_FHIR_BASE_URL}/Practitioner`;
+
+const fhirApi = axios.create({
+  baseURL: baseUrl,
+  headers: {
+    'Cache-Control': 'no-cache',
+    'Accept': 'application/fhir+json',
+  },
+});
+```
+
+*(Full file omitted here for brevity since your version is already correct.)*
+
+---
+
+# **Screenshots**
+
+Add your screenshots here:
+
+```
+/public/screenshots/search.png
+/public/screenshots/patient-details.png
+/public/screenshots/practitioner-list.png
+```
+
+```md
+![Patient Search](./public/screenshots/search.png)
+```
+
+---
+
+# **Testing with HAPI FHIR**
+
+Examples:
+
+```
+/Patient?name=smith
+/Patient?phone=0703...
+/Practitioner?name=adam
+```
+
+---
+
+# **FHIR Concepts Used**
+
+* Resource Type
+* Patient & Practitioner
+* Bundle (searchset)
+* Pagination via `_count` and `_offset`
+* Searching using:
+
+  * `?name=`
+  * `?phone=`
+  * `_summary=count`
+
+---
+
+# 🚀 **Running the Project**
+
+```bash
+npm install
+npm run dev
+```
+
+App runs on:
+
+```
+http://localhost:3000
+```
+
+---
+
+# **Contributing**
+
+Contributions are welcome!
+
+---
+
+# 📄 **License**
+
+MIT License
+
+---
+
+# ⭐ **If you find this helpful, please star the repo!**
+
+👉 [https://github.com/PaulBoye-py/fhir-tutorials](https://github.com/PaulBoye-py/fhir-tutorials)
+
+---
+
