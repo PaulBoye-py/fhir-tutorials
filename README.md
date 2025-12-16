@@ -1,4 +1,4 @@
-# **FHIR Tutorials – Next.js 14 Patient & Practitioner Portal**
+# **FHIR Tutorials – Next.js 16 Patient & Practitioner Portal**
 
 *A hands-on project demonstrating how to build a FHIR-enabled patient portal using Next.js, TypeScript, and the HAPI FHIR Server.*
 
